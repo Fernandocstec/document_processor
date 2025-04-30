@@ -1,0 +1,34 @@
+import sys
+from loguru import logger
+from pathlib import Path
+from .config import get_settings
+
+settings = get_settings()
+
+# Configura o logger do loguru
+def setup_logging():
+    # Remove o handler padrão
+    logger.remove()
+    
+    # Adiciona handler para console
+    logger.add(
+        sys.stderr,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        level=settings.LOG_LEVEL,
+        colorize=True
+    )
+    
+    # Adiciona handler para arquivo
+    log_file = settings.get_log_file()
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    
+    logger.add(
+        log_file,
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
+        level=settings.LOG_LEVEL,
+        rotation="500 MB",
+        retention="10 days",
+        compression="zip"
+    )
+
+    return logger 
